@@ -3,6 +3,7 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 import "./Imports.sol";
+// import "C:/Users/User/Desktop/_Foundry/school/src/Imports.sol";
 
 contract tokenQTKN is ERC20, Ownable{
     //price

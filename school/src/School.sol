@@ -5,6 +5,11 @@ pragma solidity >=0.7.0 <0.9.0;
 import "./Certificate.sol";
 import "./Token.sol";
 import "./Imports.sol";
+
+// import "C:/Users/User/Desktop/_Foundry/school/src/Imports.sol";
+// import "C:/Users/User/Desktop/_Foundry/school/src/Certificate.sol";
+// import "C:/Users/User/Desktop/_Foundry/school/src/Token.sol";
+
 // import "hardhat/console.sol";
 
 //here token contract is diff
@@ -13,7 +18,7 @@ contract School is Ownable{
     //important
     //owner of all contract should be same otherwise certifications wont work
     uint16 public tax = 3; //default tax
-    uint256 minimumCoursePrice = 0; //minimum course fee
+    uint256 minimumCoursePrice = 10; //minimum course fee
     uint256 baseTerm = 10; //schools share
     Certificate public certificateContract; //pointer to nft contract
     tokenQTKN public qtknContract; //pointer to nft contract
@@ -89,9 +94,10 @@ contract School is Ownable{
      *      school fee = from front-end calculated by course price - teacher's share term
      */
     function createCourse(string memory _courseName, address _teacher, uint256 _price, uint8 _shareTerm, string memory data) public {
-        require(_price >= minimumCoursePrice, "price is lower than the minimum course price");
+        require(_price >= minimumCoursePrice && _price <= 5000, "price is lower than the minimum course price");
         require(_shareTerm >= baseTerm, "share term is lower than the base term");
         require(msg.sender != address(0), "user not viable");
+        require(_teacher != address(0), "user not viable");
         require(keccak256(abi.encode(_courseName)) != keccak256(abi.encode("")) , "name cannot be null");
         // require(keccak256(abi.encode(data)) == keccak256(abi.encode("")) , "name cannot be null");
         // require(date != "", "data cannot be null");
@@ -142,16 +148,20 @@ contract School is Ownable{
     function enroll(uint _courseId) public {
         uint256 coursePrice = cnft.viewCoursePriceById(_courseId);
         uint256 basePrice = cnft.viewBasePriceById(_courseId);
+        
         require(msg.sender != address(0), "user not viable");
         require(qtknContract.allowance(msg.sender, address(this)) >= coursePrice , "Check the token allowance");
         require(qtknContract.balanceOf(msg.sender) >= coursePrice);
         require(viewCourseStatusById(_courseId), "course not active");
+        
         string memory _name = cnft.viewCourseNameById(_courseId);
         address assignedTeacher = cnft.viewCourseTeacherById(_courseId);
+        
         qtknContract.transferFrom(msg.sender, address(this), coursePrice);
         divideFee(assignedTeacher, basePrice, coursePrice);
         cnft.EnrollStudent(_courseId, msg.sender);
         ptknContract.mint(msg.sender, _courseId);
+        
         emit newStudentAdded(_courseId, ptknContract.totalSupply(),_name, assignedTeacher, coursePrice, msg.sender);
     }
 

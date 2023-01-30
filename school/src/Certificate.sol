@@ -4,6 +4,7 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
+// import "C:/Users/User/Desktop/_Foundry/school/src/Imports.sol";
 import "./Imports.sol";
 
 contract Certificate is EERC721, Ownable {
